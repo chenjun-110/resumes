@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="BallSkin" width="375" height="667" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing" xmlns:tween="egret.tween.*">
+	<w:Declarations>
+		<tween:TweenGroup id="paopao">
+			<tween:TweenItem target="{pic}">
+				<tween:Set>
+					<tween:props>
+						<e:Object scaleX="{1}" scaleY="{1}"/>
+					</tween:props>
+				</tween:Set>
+				<tween:Wait duration="1000"/>
+				<tween:Set>
+					<tween:props>
+						<e:Object scaleX="{2}" scaleY="{2}"/>
+					</tween:props>
+				</tween:Set>
+			</tween:TweenItem>
+		</tween:TweenGroup>
+	</w:Declarations>
+	<e:Rect width="100%" height="100%" x="187.5" y="333.5" anchorOffsetX="187.5" anchorOffsetY="333.5" fillColor="#e0fcff" locked="true"/>
+	<e:Image id="map" width="100%" height="100%" x="960" y="540" anchorOffsetX="960" anchorOffsetY="540" source="back"/>
+	<e:Button id="bronBtn" label="点我" x="104.33" y="88.97"/>
+
+	<e:Rect id="bottoms" width="375" height="20" x="187.5" y="657" anchorOffsetX="187.5" anchorOffsetY="10" fillColor="#7098da"/>
+	<e:Rect id="lefts" width="20" height="667" x="10" y="333.5" anchorOffsetX="10" anchorOffsetY="333.5" fillColor="#7098da"/>
+	<e:Rect id="rights" width="20" height="667" x="365" y="333.5" anchorOffsetX="10" anchorOffsetY="333.5" fillColor="#7098da"/>
+</e:Skin>

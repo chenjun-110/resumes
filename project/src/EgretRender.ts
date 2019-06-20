@@ -1,11 +1,36 @@
 // 网友从layarender改的egrerender。里面有些功能还需要自己改源码
+/**
+ * 用法：
+ * const circle = Matter.Bodies.circle(200,200,50, 
+ *  {									//这是body
+		render: { 
+			sprite: {
+				texture:'1.png'//用法2
+			}
+		},
+		container:this,
+		egretSprite:shape,////用法1
+		restitution: .8 //弹性：0不弹，越大越弹
+	},20)
+   Matter.World.add(engine.world, circle);
+   // let bodyRender = body.render;
+	// bodyRender.sprite.texture;
+
+	bug: 1.宽高都要乘以2？
+
+	eui锚点要居中,宽高不能用百分比
+ */
+const config = {
+
+}
+
 class EgretRender {
     public static create(options: Object) {
         let defaults = {
             controller: EgretRender,
             engine: null,
             element: null,
-            canvas: null,
+            canvas: null,//egret.Stage, document.getElementsByTagName('canvas')[0],
             mouse: null,
             frameRequestId: null,
             options:
@@ -146,19 +171,20 @@ class EgretRender {
 
 		if (!bodyRender.visible) return;
 
-		if (bodyRender.sprite && bodyRender.sprite.texture) {
+		if (body.egretSprite || (bodyRender.sprite && bodyRender.sprite.texture)) { //新增egretSprite
 			let spriteId = 'b-' + body.id;
 			let sprite = body.egretSprite;
-			let container = render.container;
-
+			let container = body.container;// render.container此处自定义修改了;
+			// let container = bodyRender.container// render.container此处自定义修改了;
+			// let container = render.container
 			if (!sprite) {
 				sprite = body.egretSprite = EgretRender._createBodySprite(render, body);
 			}
 
 			if (!container.contains(sprite)) {
 				container.addChild(sprite);
-				console.log('加入',container)
-				window['abc'] = sprite
+				// console.log('加入容器', container, sprite,body)
+				console.log('加入容器', container.name)
 			}
 
 			sprite.x = body.position.x;
@@ -169,7 +195,7 @@ class EgretRender {
 			sprite.scaleX = bodyRender.sprite.xScale || 1;
 			sprite.scaleY = bodyRender.sprite.yScale || 1;
 
-		}else {
+		} else {
 			let primitiveId = 'b-' + body.id;
 			let sprite = body.egretSprite;
 			let container = render.container;
@@ -197,14 +223,15 @@ class EgretRender {
 	private static _createBodySprite(render: any, body: any): any {
 		let bodyRender = body.render;
 		let textureKey = bodyRender.sprite.texture;
-		
+	
 		let sprite = new egret.Bitmap();
 		let texture = RES.getRes(textureKey);
 		sprite.texture = texture;
+
 		sprite.anchorOffsetX = body.render.sprite.xOffset;
 		sprite.anchorOffsetY = body.render.sprite.yOffset;
 
-		console.log('创建', texture)
+		console.log('创建纹理', texture)
 		sprite.width = body.render.sprite.width
 		sprite.height = body.render.sprite.height
 		return sprite;

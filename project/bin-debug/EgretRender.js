@@ -9,6 +9,28 @@ for (var i in e) e.hasOwnProperty(i) && (t[i] = e[i]);
 r.prototype = e.prototype, t.prototype = new r();
 };
 // 网友从layarender改的egrerender。里面有些功能还需要自己改源码
+/**
+ * 用法：
+ * const circle = Matter.Bodies.circle(200,200,50,
+ *  {									//这是body
+        render: {
+            sprite: {
+                texture:'1.png'//用法2
+            }
+        },
+        container:this,
+        egretSprite:shape,////用法1
+        restitution: .8 //弹性：0不弹，越大越弹
+    },20)
+   Matter.World.add(engine.world, circle);
+   // let bodyRender = body.render;
+    // bodyRender.sprite.texture;
+
+    bug: 1.宽高都要乘以2？
+
+    eui锚点要居中,宽高不能用百分比
+ */
+var config = {};
 var EgretRender = (function () {
     function EgretRender() {
     }
@@ -136,17 +158,19 @@ var EgretRender = (function () {
         var bodyRender = body.render;
         if (!bodyRender.visible)
             return;
-        if (bodyRender.sprite && bodyRender.sprite.texture) {
+        if (body.egretSprite || (bodyRender.sprite && bodyRender.sprite.texture)) {
             var spriteId = 'b-' + body.id;
             var sprite = body.egretSprite;
-            var container = render.container;
+            var container = body.container; // render.container此处自定义修改了;
+            // let container = bodyRender.container// render.container此处自定义修改了;
+            // let container = render.container
             if (!sprite) {
                 sprite = body.egretSprite = EgretRender._createBodySprite(render, body);
             }
             if (!container.contains(sprite)) {
                 container.addChild(sprite);
-                console.log('加入', container);
-                window['abc'] = sprite;
+                // console.log('加入容器', container, sprite,body)
+                console.log('加入容器', container.name);
             }
             sprite.x = body.position.x;
             sprite.y = body.position.y;
@@ -181,7 +205,7 @@ var EgretRender = (function () {
         sprite.texture = texture;
         sprite.anchorOffsetX = body.render.sprite.xOffset;
         sprite.anchorOffsetY = body.render.sprite.yOffset;
-        console.log('创建', texture);
+        console.log('创建纹理', texture);
         sprite.width = body.render.sprite.width;
         sprite.height = body.render.sprite.height;
         return sprite;
