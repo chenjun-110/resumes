@@ -1,0 +1,6 @@
+{
+	"name": "matterlib",
+	"compilerVersion": "5.2.21",
+	"typings": "src/matter.d.ts",
+	"dependencies": {}
+}
