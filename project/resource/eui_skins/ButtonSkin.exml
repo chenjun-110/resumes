@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<e:Skin class="skins.ButtonSkin" states="up,down,disabled" minHeight="50" minWidth="100" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
-	<e:Rect width="100%" height="100%" x="0" y="0" fillColor="0x38a6c4" includeIn="up"/>
-	<e:Rect id="iconDisplay" width="100%" height="100%" x="0" y="0" fillColor="0x25869e" includeIn="down"/>
-	<e:Label id="labelDisplay" top="8" bottom="8" left="8" right="8" size="20" textColor="0xFFFFFF" verticalAlign="middle" textAlign="center" text=""/>
+<e:Skin class="skins.ButtonSkin" states="up,down,disabled" minHeight="100" minWidth="100" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Rect width="100%" height="100%" x="0" y="0" fillColor="0x38a6c4" includeIn="up" ellipseWidth="100" ellipseHeight="100"/>
+	<e:Rect id="iconDisplay" width="100%" height="100%" x="0" y="0" fillColor="0x25869e" includeIn="down" ellipseHeight="100" ellipseWidth="100"/>
+	<e:Label id="labelDisplay" top="8" bottom="8" left="8" right="8" size="20" textColor="0xffe0fcff" verticalAlign="middle" textAlign="center" text=""/>
 </e:Skin>
