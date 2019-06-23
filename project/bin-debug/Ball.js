@@ -23,6 +23,8 @@ var Ball = (function (_super) {
         _this.SkillPoints = tips.SkillPoints;
         _this.SkillPoints_index = 0;
         _this.SkillPoints_count = 0;
+        _this.Points = [];
+        _this.drawPoints = [];
         _this.bugNum = 0; //bug穿透数
         console.log('map constructor', _this);
         _this.addEventListener(eui.UIEvent.CREATION_COMPLETE, _this.init, _this);
@@ -49,7 +51,7 @@ var Ball = (function (_super) {
         //创建runner
         var runner = Matter.Runner.create(null);
         //设置runner以固定帧率计算
-        runner.isFixed = true;
+        // runner.isFixed = true; 
         //创建render，使用egret的渲染方法替代matter自己的pixi渲染方法
         var render = EgretRender.create({
             element: this,
@@ -103,10 +105,10 @@ var Ball = (function (_super) {
     Ball.prototype.addEvents = function () {
         var _this = this;
         this.bronBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.tapBtn, this);
+        this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.drawLineStart, this);
+        this.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.drawLineMove, this);
+        this.addEventListener(egret.TouchEvent.TOUCH_END, this.drawLineEnd, this);
         // window.addEventListener("devicemotion", (event) => {
-        //     this.engine.world.gravity.x = event.acceleration.x;
-        //     this.engine.world.gravity.y = event.acceleration.y;
-        //     console.log('devicemotion', event)
         //     // 处理event.alpha、event.beta及event.gamma
         // }, true);
         window.addEventListener("deviceorientation", function (event) {
@@ -124,13 +126,126 @@ var Ball = (function (_super) {
         }, true);
         egret.setInterval(function () {
             _this.$children.forEach(function (v) {
-                if (v.x < -1 || v.x > _this.width || v.y < -1 || v.y > _this.height) {
+                if (v['body'] && (v.x < -1 || v.x > _this.width || v.y < -1 || v.y > _this.height)) {
                     console.log('BUG', v);
                     _this.destroyPaoPao(v);
                     _this.bugNum++;
                 }
             });
         }, this, 1000);
+    };
+    Ball.prototype.drawLineStart = function (e) {
+        console.log(e.stageX, e.stageY);
+        this.startPoint = {
+            x: e.stageX,
+            y: e.stageY
+        };
+        this.Points.push(this.startPoint);
+        this.drawPoints = [];
+    };
+    Ball.prototype.drawLineMove = function (e) {
+        //(y-y2)/(y1-y2) = (x-x2)/(x1-x2)
+        console.log(this.Points.length);
+        var P = {
+            x: e.stageX,
+            y: e.stageY
+        };
+        // if (this.Points.length >= 5) {
+        //     const y = this.Points[Math.floor(this.Points.length/2)].y
+        //     const x = this.Points[Math.floor(this.Points.length/2)].x
+        //     const y1 = this.startPoint.y
+        //     const x1 = this.startPoint.x
+        //     const y2 = P.y
+        //     const x2 = P.x
+        //     if ( (y-y2)/(y1-y2) === (x-x2)/(x1-x2) ) {
+        //         console.log('是直线')
+        //     } else {
+        this.drawPoints.push([this.startPoint, P]);
+        this.Points = [];
+        this.startPoint = P;
+        this.Points.push(this.startPoint);
+        //     }
+        // }
+        this.Points.push(P);
+    };
+    Ball.prototype.drawLineEnd = function (e) {
+        var _this = this;
+        console.log(this.drawPoints);
+        var lines = [];
+        this.drawPoints.forEach(function (arr, i, all) {
+            var dx = Math.abs(arr[0].x - arr[1].x);
+            var dy = Math.abs(arr[0].y - arr[1].y);
+            var dis = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)); //两点间距离-作宽
+            // if ()
+            var next = all[i + 1];
+            if (!next)
+                return;
+            var P1 = arr[0];
+            var P2 = {
+                x: arr[1].x,
+                y: arr[1].y
+            };
+            // 仅根据起点和终点画出带方向的矩形
+            var k = (P2.y - P1.y) / (P2.x - P1.x);
+            var angle = Math.atan2((P2.y - P1.y), (P2.x - P1.x)); // 直线和x轴的弧度
+            // var theta = angle*(180/Math.PI);
+            // console.log('k', k) Math.PI/360
+            var line = Matter.Bodies.rectangle(arr[0].x, arr[0].y, dis, 1, {
+                friction: .2,
+                angle: angle,
+                container: _this,
+                slop: 0,
+                restitution: 0,
+                isStatic: true
+            });
+            line.P = arr;
+            line.dis = dis;
+            lines.push(line);
+        });
+        if (lines.length == 0)
+            return;
+        // lines[0].isStatic = false
+        // lines[lines.length-1].isStatic = false
+        // const cs = []
+        // var chains=Matter.Composites.stack(50,50,10,1,9,0,(x, y)=>{
+        //     return Matter.Bodies.rectangle(x,y,20,30,{
+        //         chamfer:15,
+        //         container:this
+        //     })
+        // });
+        var b1 = Matter.Body.create({
+            parts: lines,
+            container: this,
+            slop: 0,
+            restitution: 0
+        });
+        // Matter.Composites.chain(chains, 0.5, 0, -0.5, 0, { stiffness: 0.9 });
+        // Matter.Body.create(b1, chains.bodies, true)
+        // cs.push(b1)
+        // const c = Matter.Constraint.create({
+        //             bodyA: lines[0], // 约束刚体 A
+        //             pointA : {
+        //                 x:lines[1].dis/2,y:0
+        //             }, // 约束点 A
+        //             bodyB: lines[1], // 约束刚体 B
+        //             pointB: {
+        //                 x:-lines[1].dis/2,y:0
+        //             }, // 约束点 B
+        //             stiffness: 0
+        //         })
+        //             cs.push(c)
+        // var group = Matter.Body.nextGroup(true);
+        // var bridge = Matter.Composites.stack(50,100,6,1,0,0, (x, y) => {
+        //     return Matter.Bodies.rectangle(x, y, 50, 20, {
+        //             container:this
+        //     });
+        // });
+        // let composite = {
+        //     bodies:[],
+        //     constraints:[]
+        // }
+        Matter.World.add(this.engine.world, b1);
+        console.log(lines);
     };
     Ball.prototype.removeEvents = function () {
         this.bronBtn.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.tapBtn, this);
