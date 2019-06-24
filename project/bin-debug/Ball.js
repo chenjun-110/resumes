@@ -43,6 +43,7 @@ var Ball = (function (_super) {
         playAnimation(this.cannnonRotate, true);
     };
     Ball.prototype.init = function () {
+        var _this = this;
         console.log('init', this.bottoms.x, this.bottoms);
         var Engine = Matter.Engine, Render = Matter.Render, Runner = Matter.Runner, MouseConstraint = Matter.MouseConstraint, Mouse = Matter.Mouse, World = Matter.World, Bodies = Matter.Bodies;
         //创建engine
@@ -51,7 +52,7 @@ var Ball = (function (_super) {
         //创建runner
         var runner = Matter.Runner.create(null);
         //设置runner以固定帧率计算
-        // runner.isFixed = true; 
+        runner.isFixed = true;
         //创建render，使用egret的渲染方法替代matter自己的pixi渲染方法
         var render = EgretRender.create({
             element: this,
@@ -78,9 +79,20 @@ var Ball = (function (_super) {
         // },20)
         // Matter.World.add(engine.world, circle);
         console.log('容器', Matter.Bodies, this.lefts.height);
+        var group = Matter.Body.nextGroup(false);
         Matter.World.add(engine.world, [
             Matter.Bodies.rectangle(this.tops.x, this.tops.y, this.tops.width, this.tops.height, { isStatic: true, friction: .2, container: this, egretSprite: this.tops }),
-            Matter.Bodies.rectangle(this.bottoms.x, this.bottoms.y, this.bottoms.width, this.bottoms.height, { isStatic: true, friction: .2, container: this, egretSprite: this.bottoms }),
+            Matter.Bodies.rectangle(this.bottoms.x, this.bottoms.y, this.bottoms.width, this.bottoms.height, {
+                isStatic: true,
+                friction: 0,
+                container: this,
+                egretSprite: this.bottoms,
+                collisionFilter: {
+                    category: 0x0004,
+                    // mask:0x0004,
+                    group: 1
+                }
+            }),
             Matter.Bodies.rectangle(this.lefts.x, this.lefts.y, this.lefts.width, this.lefts.height, { isStatic: true, friction: .2, container: this, egretSprite: this.lefts }),
             Matter.Bodies.rectangle(this.rights.x, this.rights.y, this.rights.width, this.rights.height, { isStatic: true, friction: .2, container: this, egretSprite: this.rights }),
         ]);
@@ -89,18 +101,57 @@ var Ball = (function (_super) {
         //     max: { x: 375, y: 667 }
         // },null,null);
         // 碰撞事件
+        var kk = 0;
         Matter.Events.on(engine, 'collisionStart', function (event) {
             var pairs = event.pairs;
+            kk++;
             for (var i = 0; i < pairs.length; i++) {
                 var pair = pairs[i];
-                // console.log(pair, pairs)
+                console.log('kk:' + kk, pair, pairs);
                 //pair.bodyA pair.bodyB是碰撞双方
+                if (pair.bodyB.label === 'line') {
+                }
+            }
+            var parentA = pairs[0].bodyA.parent;
+            var parentB = pairs[0].bodyB.parent;
+            _this.checkCrashBug(parentB, pairs);
+            _this.checkCrashBug(parentA, pairs);
+            if (parentA.label === 'linebox' && parentA.isStatic) {
+                // debugger;
+                // parentA.isStatic = false
+                // Matter.Body.setStatic(parentA, false)
+                // parentA.mass=1
+                // parentA.inverseMass = 1
+                // parentA.angle = 0
+                console.log('激活');
             }
         });
         this.tips.text = tips.a;
         this.createPaoPao();
         this.addEvents();
         this.SkillPoints_count = this.SkillPoints.length;
+    };
+    Ball.prototype.checkCrashBug = function (parent, pairs) {
+        if (parent.label === 'linebox' && pairs.length > 10) {
+            Matter.Body.setStatic(parent, true);
+            console.log('多重触发 静态');
+        }
+        else if (parent.label === 'linebox' && !parent.isStatic) {
+            if (parent.nowtime) {
+                parent.times++;
+                var timedif = (Date.now() - parent.nowtime) / 1000;
+                if (timedif > 2 && parent.times > 5) {
+                    Matter.Body.setStatic(parent, true);
+                    delete parent.times;
+                    delete parent.nowtime;
+                    console.log('碰撞次数超限 静态');
+                }
+            }
+            else {
+                parent.nowtime = Date.now();
+                parent.times = 1;
+            }
+        }
     };
     Ball.prototype.addEvents = function () {
         var _this = this;
@@ -150,33 +201,34 @@ var Ball = (function (_super) {
             x: e.stageX,
             y: e.stageY
         };
-        // if (this.Points.length >= 5) {
-        //     const y = this.Points[Math.floor(this.Points.length/2)].y
-        //     const x = this.Points[Math.floor(this.Points.length/2)].x
-        //     const y1 = this.startPoint.y
-        //     const x1 = this.startPoint.x
-        //     const y2 = P.y
-        //     const x2 = P.x
-        //     if ( (y-y2)/(y1-y2) === (x-x2)/(x1-x2) ) {
-        //         console.log('是直线')
-        //     } else {
-        this.drawPoints.push([this.startPoint, P]);
-        this.Points = [];
-        this.startPoint = P;
-        this.Points.push(this.startPoint);
-        //     }
-        // }
+        if (this.Points.length >= 5) {
+            var y = this.Points[Math.floor(this.Points.length / 2)].y;
+            var x = this.Points[Math.floor(this.Points.length / 2)].x;
+            var y1 = this.startPoint.y;
+            var x1 = this.startPoint.x;
+            var y2 = P.y;
+            var x2 = P.x;
+            if ((y - y2) / (y1 - y2) === (x - x2) / (x1 - x2)) {
+                console.log('是直线');
+            }
+            else {
+                this.drawPoints.push([this.startPoint, P]);
+                this.Points = [];
+                this.startPoint = P;
+                this.Points.push(this.startPoint);
+            }
+        }
         this.Points.push(P);
     };
     Ball.prototype.drawLineEnd = function (e) {
         var _this = this;
         console.log(this.drawPoints);
         var lines = [];
+        var group = Matter.Body.nextGroup(true);
         this.drawPoints.forEach(function (arr, i, all) {
             var dx = Math.abs(arr[0].x - arr[1].x);
             var dy = Math.abs(arr[0].y - arr[1].y);
             var dis = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)); //两点间距离-作宽
-            // if ()
             var next = all[i + 1];
             if (!next)
                 return;
@@ -188,15 +240,20 @@ var Ball = (function (_super) {
             // 仅根据起点和终点画出带方向的矩形
             var k = (P2.y - P1.y) / (P2.x - P1.x);
             var angle = Math.atan2((P2.y - P1.y), (P2.x - P1.x)); // 直线和x轴的弧度
-            // var theta = angle*(180/Math.PI);
-            // console.log('k', k) Math.PI/360
-            var line = Matter.Bodies.rectangle(arr[0].x, arr[0].y, dis, 1, {
-                friction: .2,
+            var line = Matter.Bodies.rectangle(arr[0].x, arr[0].y, dis, 10, {
+                // friction: .2, 
                 angle: angle,
                 container: _this,
                 slop: 0,
                 restitution: 0,
-                isStatic: true
+                collisionFilter: {
+                    group: group,
+                },
+                // isSensor:false,
+                label: 'line',
+                friction: 0,
+                frictionAir: 0,
+                frictionStatic: 0,
             });
             line.P = arr;
             line.dis = dis;
@@ -204,6 +261,7 @@ var Ball = (function (_super) {
         });
         if (lines.length == 0)
             return;
+        console.log('group', group);
         // lines[0].isStatic = false
         // lines[lines.length-1].isStatic = false
         // const cs = []
@@ -217,7 +275,10 @@ var Ball = (function (_super) {
             parts: lines,
             container: this,
             slop: 0,
-            restitution: 0
+            restitution: 0,
+            label: 'linebox',
+            // isStatic:true,
+            collisionFilter: {}
         });
         // Matter.Composites.chain(chains, 0.5, 0, -0.5, 0, { stiffness: 0.9 });
         // Matter.Body.create(b1, chains.bodies, true)
