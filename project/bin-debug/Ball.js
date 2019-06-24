@@ -118,7 +118,6 @@ var Ball = (function (_super) {
             _this.checkCrashBug(parentA, pairs);
             if (parentA.label === 'linebox' && parentA.isStatic) {
                 // debugger;
-                // parentA.isStatic = false
                 // Matter.Body.setStatic(parentA, false)
                 // parentA.mass=1
                 // parentA.inverseMass = 1
@@ -134,7 +133,7 @@ var Ball = (function (_super) {
     Ball.prototype.checkCrashBug = function (parent, pairs) {
         if (parent.label === 'linebox' && pairs.length > 10) {
             Matter.Body.setStatic(parent, true);
-            console.log('多重触发 静态');
+            console.log('多个刚体触发 静态');
         }
         else if (parent.label === 'linebox' && !parent.isStatic) {
             if (parent.nowtime) {
@@ -195,7 +194,6 @@ var Ball = (function (_super) {
         this.drawPoints = [];
     };
     Ball.prototype.drawLineMove = function (e) {
-        //(y-y2)/(y1-y2) = (x-x2)/(x1-x2)
         console.log(this.Points.length);
         var P = {
             x: e.stageX,
@@ -262,27 +260,15 @@ var Ball = (function (_super) {
         if (lines.length == 0)
             return;
         console.log('group', group);
-        // lines[0].isStatic = false
-        // lines[lines.length-1].isStatic = false
-        // const cs = []
-        // var chains=Matter.Composites.stack(50,50,10,1,9,0,(x, y)=>{
-        //     return Matter.Bodies.rectangle(x,y,20,30,{
-        //         chamfer:15,
-        //         container:this
-        //     })
-        // });
-        var b1 = Matter.Body.create({
+        var linebox = Matter.Body.create({
             parts: lines,
             container: this,
             slop: 0,
             restitution: 0,
             label: 'linebox',
-            // isStatic:true,
             collisionFilter: {}
         });
         // Matter.Composites.chain(chains, 0.5, 0, -0.5, 0, { stiffness: 0.9 });
-        // Matter.Body.create(b1, chains.bodies, true)
-        // cs.push(b1)
         // const c = Matter.Constraint.create({
         //             bodyA: lines[0], // 约束刚体 A
         //             pointA : {
@@ -295,17 +281,11 @@ var Ball = (function (_super) {
         //             stiffness: 0
         //         })
         //             cs.push(c)
-        // var group = Matter.Body.nextGroup(true);
-        // var bridge = Matter.Composites.stack(50,100,6,1,0,0, (x, y) => {
-        //     return Matter.Bodies.rectangle(x, y, 50, 20, {
-        //             container:this
-        //     });
-        // });
         // let composite = {
         //     bodies:[],
         //     constraints:[]
         // }
-        Matter.World.add(this.engine.world, b1);
+        Matter.World.add(this.engine.world, linebox);
         console.log(lines);
     };
     Ball.prototype.removeEvents = function () {

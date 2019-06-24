@@ -96,13 +96,8 @@ class Ball extends eui.Component {
             }),
             Matter.Bodies.rectangle(this.lefts.x, this.lefts.y, this.lefts.width, this.lefts.height, { isStatic: true, friction: .2, container:this, egretSprite:this.lefts  }),
             Matter.Bodies.rectangle(this.rights.x, this.rights.y, this.rights.width, this.rights.height, { isStatic: true, friction: .2, container:this, egretSprite:this.rights}),
-            // Matter.Composites.stack(20, 10, 5, 3, 20, 0, (x, y) => {
-            //     //刚体和复合材料结合成复合体，这里堆叠的是矩形，矩形宽 50，高20，中心位置为(x,y)
-            //     return Matter.Bodies.rectangle(30, 30, 50, 20, { isStatic: true, friction: .2, container:this,});
-            // })
         ]);
             
-
         // Render.lookAt(render, {
         //     min: { x: 0, y: 0 },
         //     max: { x: 375, y: 667 }
@@ -126,7 +121,6 @@ class Ball extends eui.Component {
             this.checkCrashBug(parentA, pairs)
             if (parentA.label === 'linebox' && parentA.isStatic) {
                 // debugger;
-                // parentA.isStatic = false
                 // Matter.Body.setStatic(parentA, false)
                 // parentA.mass=1
                 // parentA.inverseMass = 1
@@ -139,10 +133,10 @@ class Ball extends eui.Component {
         this.addEvents();
         this.SkillPoints_count = this.SkillPoints.length
     }
-    checkCrashBug (parent, pairs) {
+    checkCrashBug (parent, pairs) { //检测碰撞bug
         if (parent.label === 'linebox' && pairs.length>10) { //碰撞多重触发bug
             Matter.Body.setStatic(parent, true)
-            console.log('多重触发 静态')
+            console.log('多个刚体触发 静态')
         } else if (parent.label === 'linebox' && !parent.isStatic) {
             if (parent.nowtime) { //统计函数2秒内调用了几次parent.mathid && 
                 parent.times++
@@ -210,7 +204,6 @@ class Ball extends eui.Component {
     }
     Points=[]
     drawLineMove (e) {
-        //(y-y2)/(y1-y2) = (x-x2)/(x1-x2)
         console.log(this.Points.length)
         const P = {
             x:e.stageX, 
@@ -223,7 +216,7 @@ class Ball extends eui.Component {
             const x1 = this.startPoint.x
             const y2 = P.y
             const x2 = P.x
-            if ( (y-y2)/(y1-y2) === (x-x2)/(x1-x2) ) {
+            if ( (y-y2)/(y1-y2) === (x-x2)/(x1-x2) ) { //直线公式
                 console.log('是直线')
             } else {
                 this.drawPoints.push([this.startPoint, P])
@@ -269,7 +262,6 @@ class Ball extends eui.Component {
                 friction: 0,
                 frictionAir: 0,
                 frictionStatic:0,
-                // isStatic: Math.random()>0.1?true:false
              })
             line.P = arr
             line.dis = dis
@@ -278,22 +270,12 @@ class Ball extends eui.Component {
         })
         if (lines.length == 0) return
         console.log('group', group)
-        // lines[0].isStatic = false
-        // lines[lines.length-1].isStatic = false
-        // const cs = []
-        // var chains=Matter.Composites.stack(50,50,10,1,9,0,(x, y)=>{
-        //     return Matter.Bodies.rectangle(x,y,20,30,{
-        //         chamfer:15,
-        //         container:this
-        //     })
-        // });
-        let b1 = Matter.Body.create({
+        let linebox = Matter.Body.create({
             parts:lines,
             container:this,
             slop:0,
             restitution:0,
             label:'linebox',
-            // isStatic:true,
             collisionFilter: {
                     // group: -2,
                     // mask:0x0004,
@@ -301,8 +283,6 @@ class Ball extends eui.Component {
                 }
         });
         // Matter.Composites.chain(chains, 0.5, 0, -0.5, 0, { stiffness: 0.9 });
-        // Matter.Body.create(b1, chains.bodies, true)
-        // cs.push(b1)
         // const c = Matter.Constraint.create({
         //             bodyA: lines[0], // 约束刚体 A
         //             pointA : {
@@ -315,19 +295,11 @@ class Ball extends eui.Component {
         //             stiffness: 0
         //         })
         //             cs.push(c)
-
-    
-        // var group = Matter.Body.nextGroup(true);
-        // var bridge = Matter.Composites.stack(50,100,6,1,0,0, (x, y) => {
-        //     return Matter.Bodies.rectangle(x, y, 50, 20, {
-        //             container:this
-        //     });
-        // });
         // let composite = {
         //     bodies:[],
         //     constraints:[]
         // }
-        Matter.World.add(this.engine.world, b1 )
+        Matter.World.add(this.engine.world, linebox )
         console.log(lines)
     }
     bugNum:number=0 //bug穿透数
