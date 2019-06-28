@@ -11,7 +11,7 @@ r.prototype = e.prototype, t.prototype = new r();
 var tips = {
     a: '熟练技能球',
     b: '请点炸所有技能球',
-    end: '恭喜你,游戏结束',
+    end: '恭喜你,进入下一关',
     SkillPoints: ['ES6', 'Html5', 'CSS3', '调试', '布局', 'Vue', 'Node.js', 'Egret', 'Webpack', 'Linux', 'Nginx', 'Git', 'Mysql', 'Fiddler', 'Python'],
     SkillPoints2: ['ReactNative', 'Flutter']
 };
@@ -23,10 +23,8 @@ var Ball = (function (_super) {
         _this.SkillPoints = tips.SkillPoints;
         _this.SkillPoints_index = 0;
         _this.SkillPoints_count = 0;
-        _this.Points = [];
-        _this.drawPoints = [];
         _this.bugNum = 0; //bug穿透数
-        console.log('map constructor', _this);
+        _this.intval = null;
         _this.addEventListener(eui.UIEvent.CREATION_COMPLETE, _this.init, _this);
         _this.skinName = "BallSkin";
         return _this;
@@ -40,10 +38,24 @@ var Ball = (function (_super) {
     };
     Ball.prototype.childrenCreated = function () {
         console.log('childrenCreated', this.bottoms.x);
-        playAnimation(this.cannnonRotate, true);
+        playAnimations(this.cannnonRotate, true);
     };
     Ball.prototype.init = function () {
-        var _this = this;
+        var data = RES.getRes("robot_json");
+        var png = RES.getRes("robot_png");
+        var mcFactory = new egret.MovieClipDataFactory(data, png);
+        var robot = this.robot = new egret.MovieClip(mcFactory.generateMovieClipData("walk"));
+        robot.frameRate = 42;
+        robot.scaleX = robot.scaleY = 0.4;
+        robot.width = robot.height = 100;
+        robot.anchorOffsetX = robot.anchorOffsetY = 160;
+        this.addChild(robot);
+        robot.gotoAndStop(25);
+        // setTimeout(()=>{
+        //     // robot.movieClipData  = mcFactory.generateMovieClipData( "walk" );
+        //     // robot.gotoAndPlay( 1 ,-1);
+        //     robot.gotoAndStop(25)
+        // },3000)
         console.log('init', this.bottoms.x, this.bottoms);
         var Engine = Matter.Engine, Render = Matter.Render, Runner = Matter.Runner, MouseConstraint = Matter.MouseConstraint, Mouse = Matter.Mouse, World = Matter.World, Bodies = Matter.Bodies;
         //创建engine
@@ -64,22 +76,18 @@ var Ball = (function (_super) {
                 wireframes: true,
             }
         });
+        world.bounds.max = {
+            x: this.width,
+            y: this.height
+        };
         Matter.Runner.run(runner, engine); // 运行引擎
         EgretRender.run(render); //运行渲染
-        engine.world.gravity.y = 1;
+        engine.world.gravity.y = 0.2;
         // 图片大小要参照钢体大小
-        // var shp:egret.Shape = new egret.Shape();
-        // shp.graphics.beginFill( 0xff0000, 1);
-        // shp.graphics.drawRect( 0, 0, 100, 200 );
-        // shp.graphics.endFill();
-        // const circle = Matter.Bodies.circle(200,200,50, {
-        //     container:this,
-        //     egretSprite:shp,
-        //     restitution: .8 //弹性：0不弹，越大越弹
-        // },20)
-        // Matter.World.add(engine.world, circle);
         console.log('容器', Matter.Bodies, this.lefts.height);
         var group = Matter.Body.nextGroup(false);
+        var leftWall = Matter.Bodies.rectangle(this.lefts.x, this.lefts.y, this.lefts.width, this.lefts.height, { isStatic: true, friction: .2, container: this, egretSprite: this.lefts });
+        var rightWall = Matter.Bodies.rectangle(this.rights.x, this.rights.y, this.rights.width, this.rights.height, { isStatic: true, friction: .2, container: this, egretSprite: this.rights });
         Matter.World.add(engine.world, [
             Matter.Bodies.rectangle(this.tops.x, this.tops.y, this.tops.width, this.tops.height, { isStatic: true, friction: .2, container: this, egretSprite: this.tops }),
             Matter.Bodies.rectangle(this.bottoms.x, this.bottoms.y, this.bottoms.width, this.bottoms.height, {
@@ -88,14 +96,17 @@ var Ball = (function (_super) {
                 container: this,
                 egretSprite: this.bottoms,
                 collisionFilter: {
-                    category: 0x0004,
+                    // category:0x0004,
                     // mask:0x0004,
                     group: 1
                 }
             }),
-            Matter.Bodies.rectangle(this.lefts.x, this.lefts.y, this.lefts.width, this.lefts.height, { isStatic: true, friction: .2, container: this, egretSprite: this.lefts }),
-            Matter.Bodies.rectangle(this.rights.x, this.rights.y, this.rights.width, this.rights.height, { isStatic: true, friction: .2, container: this, egretSprite: this.rights }),
+            leftWall, rightWall
         ]);
+        console.log('world', world, rightWall);
+        // setTimeout(()=>{
+        //     Matter.Body.setStatic(leftWall, false)
+        // },3000) 
         // Render.lookAt(render, {
         //     min: { x: 0, y: 0 },
         //     max: { x: 375, y: 667 }
@@ -112,69 +123,18 @@ var Ball = (function (_super) {
                 if (pair.bodyB.label === 'line') {
                 }
             }
-            var parentA = pairs[0].bodyA.parent;
-            var parentB = pairs[0].bodyB.parent;
-            _this.checkCrashBug(parentB, pairs);
-            _this.checkCrashBug(parentA, pairs);
-            if (parentA.label === 'linebox' && parentA.isStatic) {
-                // debugger;
-                // Matter.Body.setStatic(parentA, false)
-                // parentA.mass=1
-                // parentA.inverseMass = 1
-                // parentA.angle = 0
-                console.log('激活');
-            }
         });
-        this.tips.text = tips.a;
-        this.createPaoPao();
         this.addEvents();
-        this.SkillPoints_count = this.SkillPoints.length;
-    };
-    Ball.prototype.checkCrashBug = function (parent, pairs) {
-        if (parent.label === 'linebox' && pairs.length > 10) {
-            Matter.Body.setStatic(parent, true);
-            console.log('多个刚体触发 静态');
-        }
-        else if (parent.label === 'linebox' && !parent.isStatic) {
-            if (parent.nowtime) {
-                parent.times++;
-                var timedif = (Date.now() - parent.nowtime) / 1000;
-                if (timedif > 2 && parent.times > 5) {
-                    Matter.Body.setStatic(parent, true);
-                    delete parent.times;
-                    delete parent.nowtime;
-                    console.log('碰撞次数超限 静态');
-                }
-            }
-            else {
-                parent.nowtime = Date.now();
-                parent.times = 1;
-            }
-        }
+        this.start();
     };
     Ball.prototype.addEvents = function () {
         var _this = this;
         this.bronBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.tapBtn, this);
-        this.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.drawLineStart, this);
-        this.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.drawLineMove, this);
-        this.addEventListener(egret.TouchEvent.TOUCH_END, this.drawLineEnd, this);
-        // window.addEventListener("devicemotion", (event) => {
-        //     // 处理event.alpha、event.beta及event.gamma
-        // }, true);
-        window.addEventListener("deviceorientation", function (event) {
-            var x = Number((Math.log(Math.abs(event.beta)) / 5).toFixed(2));
-            var y = Number((Math.log(Math.abs(event.gamma)) / 5).toFixed(2));
-            if (event.beta < 0)
-                x *= -1;
-            if (event.gamma < 0)
-                y *= -1;
-            _this.engine.world.gravity.x = y;
-            _this.engine.world.gravity.y = x;
-            _this.tips.text = "bug\u7A7F\u900F\u6570:" + _this.bugNum + " x:" + _this.engine.world.gravity.x + " y:" + _this.engine.world.gravity.y;
-            console.log('devicemotion', event);
-            // 处理event.alpha z、event.beta x及event.gamma y旋转角度
-        }, true);
-        egret.setInterval(function () {
+        this.addEventListener(egret.TouchEvent.TOUCH_TAP, this.moveRobot, this);
+        this.reset.addEventListener(egret.TouchEvent.TOUCH_TAP, this.resets, this);
+        this.next.addEventListener(egret.TouchEvent.TOUCH_TAP, this.nexts, this);
+        window.addEventListener("deviceorientation", this.deviceorientation, true);
+        this.intval = egret.setInterval(function () {
             _this.$children.forEach(function (v) {
                 if (v['body'] && (v.x < -1 || v.x > _this.width || v.y < -1 || v.y > _this.height)) {
                     console.log('BUG', v);
@@ -184,112 +144,23 @@ var Ball = (function (_super) {
             });
         }, this, 1000);
     };
-    Ball.prototype.drawLineStart = function (e) {
-        console.log(e.stageX, e.stageY);
-        this.startPoint = {
-            x: e.stageX,
-            y: e.stageY
-        };
-        this.Points.push(this.startPoint);
-        this.drawPoints = [];
-    };
-    Ball.prototype.drawLineMove = function (e) {
-        console.log(this.Points.length);
-        var P = {
-            x: e.stageX,
-            y: e.stageY
-        };
-        if (this.Points.length >= 5) {
-            var y = this.Points[Math.floor(this.Points.length / 2)].y;
-            var x = this.Points[Math.floor(this.Points.length / 2)].x;
-            var y1 = this.startPoint.y;
-            var x1 = this.startPoint.x;
-            var y2 = P.y;
-            var x2 = P.x;
-            if ((y - y2) / (y1 - y2) === (x - x2) / (x1 - x2)) {
-                console.log('是直线');
-            }
-            else {
-                this.drawPoints.push([this.startPoint, P]);
-                this.Points = [];
-                this.startPoint = P;
-                this.Points.push(this.startPoint);
-            }
-        }
-        this.Points.push(P);
-    };
-    Ball.prototype.drawLineEnd = function (e) {
-        var _this = this;
-        console.log(this.drawPoints);
-        var lines = [];
-        var group = Matter.Body.nextGroup(true);
-        this.drawPoints.forEach(function (arr, i, all) {
-            var dx = Math.abs(arr[0].x - arr[1].x);
-            var dy = Math.abs(arr[0].y - arr[1].y);
-            var dis = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)); //两点间距离-作宽
-            var next = all[i + 1];
-            if (!next)
-                return;
-            var P1 = arr[0];
-            var P2 = {
-                x: arr[1].x,
-                y: arr[1].y
-            };
-            // 仅根据起点和终点画出带方向的矩形
-            var k = (P2.y - P1.y) / (P2.x - P1.x);
-            var angle = Math.atan2((P2.y - P1.y), (P2.x - P1.x)); // 直线和x轴的弧度
-            var line = Matter.Bodies.rectangle(arr[0].x, arr[0].y, dis, 10, {
-                // friction: .2, 
-                angle: angle,
-                container: _this,
-                slop: 0,
-                restitution: 0,
-                collisionFilter: {
-                    group: group,
-                },
-                // isSensor:false,
-                label: 'line',
-                friction: 0,
-                frictionAir: 0,
-                frictionStatic: 0,
-            });
-            line.P = arr;
-            line.dis = dis;
-            lines.push(line);
-        });
-        if (lines.length == 0)
-            return;
-        console.log('group', group);
-        var linebox = Matter.Body.create({
-            parts: lines,
-            container: this,
-            slop: 0,
-            restitution: 0,
-            label: 'linebox',
-            collisionFilter: {}
-        });
-        // Matter.Composites.chain(chains, 0.5, 0, -0.5, 0, { stiffness: 0.9 });
-        // const c = Matter.Constraint.create({
-        //             bodyA: lines[0], // 约束刚体 A
-        //             pointA : {
-        //                 x:lines[1].dis/2,y:0
-        //             }, // 约束点 A
-        //             bodyB: lines[1], // 约束刚体 B
-        //             pointB: {
-        //                 x:-lines[1].dis/2,y:0
-        //             }, // 约束点 B
-        //             stiffness: 0
-        //         })
-        //             cs.push(c)
-        // let composite = {
-        //     bodies:[],
-        //     constraints:[]
-        // }
-        Matter.World.add(this.engine.world, linebox);
-        console.log(lines);
+    Ball.prototype.deviceorientation = function (event) {
+        var x = Number((Math.log(Math.abs(event.beta)) / 5).toFixed(2));
+        var y = Number((Math.log(Math.abs(event.gamma)) / 5).toFixed(2));
+        if (event.beta < 0)
+            x *= -1;
+        if (event.gamma < 0)
+            y *= -1;
+        this.engine.world.gravity.x = y;
+        this.engine.world.gravity.y = x;
+        // this.tips.text = `bug穿透数:${this.bugNum} x:${this.engine.world.gravity.x} y:${this.engine.world.gravity.y}`
+        // console.log('devicemotion', event)
+        // 处理event.alpha z、event.beta x及event.gamma y旋转角度
     };
     Ball.prototype.removeEvents = function () {
         this.bronBtn.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.tapBtn, this);
+        egret.clearInterval(this.intval);
+        window.removeEventListener("deviceorientation", this.deviceorientation, true);
     };
     Ball.prototype.tapBtn = function () {
         this.SkillPoints_index++;
@@ -354,13 +225,57 @@ var Ball = (function (_super) {
         target.parent.removeChild(target);
         Matter.World.remove(this.engine.world, target.body, null);
         this.SkillPoints_count--;
+        this.wins();
+    };
+    Ball.prototype.moveRobot = function (e) {
+        var _this = this;
+        if (this.robot.isPlaying) {
+            egret.Tween.removeTweens(this.robot);
+        }
+        else {
+            this.robot.gotoAndPlay(this.robot.currentFrame, -1);
+        }
+        egret.Tween.get(this.robot, {
+            loop: false,
+            onChangeObj: this //更新函数作用域
+        })
+            .to({ x: e.stageX, y: e.stageY }, distance(this.robot.x, e.stageX, this.robot.y, e.stageY) * 7)
+            .call(function () {
+            _this.robot.stop();
+        }, this, []); //设置回调函数及作用域，可用于侦听动画完成
+    };
+    Ball.prototype.start = function () {
+        this.SkillPoints_index = 0;
+        this.SkillPoints_count = this.SkillPoints.length;
+        this.tips.text = tips.a;
+        this.createPaoPao();
+    };
+    Ball.prototype.wins = function () {
+        var _this = this;
         if (this.SkillPoints_count === 0) {
             this.win.play();
-            setTimeout(function () { return RES.getRes('boom_mp3').play(0, 1); }, 3000);
-            this.tips.text = tips.end;
+            setTimeout(function () {
+                RES.getRes('boom_mp3').play(0, 1);
+                _this.tips.text = tips.end;
+                _this.reset.visible = true;
+                _this.next.visible = true;
+            }, 3000);
         }
     };
-    Ball.prototype.update = function () {
+    Ball.prototype.resets = function () {
+        //重置动画
+        this.win.play(0);
+        this.win.stop();
+        playAnimations(this.cannnonRotate, true);
+        this.start();
+        this.bronBtn.visible = true;
+        this.reset.visible = false;
+        this.next.visible = false;
+    };
+    Ball.prototype.nexts = function () {
+        this.removeEvents();
+        Ball._parent.removeChild(this);
+        Ball._parent.next();
     };
     Ball.prototype.createBitmapByName = function (name) {
         var result = new egret.Bitmap();
@@ -385,13 +300,26 @@ function RandomNumBoth_Int(Min, Max) {
     var num = Min + Math.round(Rand * Range); //四舍五入
     return num;
 }
-function playAnimation(target, isLoop) {
+function playAnimations(target, isLoop) {
     if (isLoop) {
         for (var key in target.items) {
             target.items[key].props = { loop: true };
         }
     }
     target.play();
+}
+function distance(x1, x2, y1, y2) {
+    var x1 = x1;
+    //获取第一点的X坐标
+    var y1 = eval(y1);
+    //获取第一点的Y坐标
+    var x2 = eval(x2);
+    //获取第二点的X坐标
+    var y2 = eval(y2);
+    //获取第二点的Y坐标
+    var calX = x2 - x1;
+    var calY = y2 - y1;
+    return Math.pow((calX * calX + calY * calY), 0.5);
 }
 /**
  *

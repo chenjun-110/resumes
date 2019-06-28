@@ -166,6 +166,7 @@ var EgretRender = (function () {
             // let container = render.container
             if (!sprite) {
                 sprite = body.egretSprite = EgretRender._createBodySprite(render, body);
+                // sprite.initAngle = body.angle;
             }
             if (!container.contains(sprite)) {
                 container.addChild(sprite);
@@ -175,9 +176,15 @@ var EgretRender = (function () {
             sprite.x = body.position.x;
             sprite.y = body.position.y;
             sprite.rotation = body.angle * 180 / Math.PI;
+            // sprite.rotation = (body.angle - sprite.initAngle) * 180 / Math.PI ;
             // console.log(body.angle);
             sprite.scaleX = bodyRender.sprite.xScale || 1;
             sprite.scaleY = bodyRender.sprite.yScale || 1;
+            // if (body.startPoint) {
+            // 	sprite.x = body.position.x - body.startPoint.x;
+            // 	sprite.y = body.position.y - body.startPoint.y;
+            // 	sprite.rotation = body.angle / (360 / Math.PI);
+            // }
         }
         else {
             var primitiveId = 'b-' + body.id;
@@ -230,7 +237,7 @@ var EgretRender = (function () {
             }
             else {
                 fillStyle = null;
-                strokeStyle = 0xff0000;
+                strokeStyle = 0x000; //0xff0000;
                 lineWidth = 1;
             }
             for (var j = 0; j < part.vertices.length; j++) {
@@ -241,7 +248,7 @@ var EgretRender = (function () {
             for (var m = 1; m < points.length; m++) {
                 primitive.lineTo(points[m][0], points[m][1]);
             }
-            primitive.lineTo(points[0][0], points[0][1]);
+            // primitive.lineTo(points[0][0], points[0][1]);
             primitive.endFill();
         }
         return sprite;

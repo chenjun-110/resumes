@@ -74,7 +74,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.GameLevels = [Ball, Pen];
+        _this.GameLevelsIndex = -1;
+        return _this;
     }
     Main.prototype.createChildren = function () {
         _super.prototype.createChildren.call(this);
@@ -162,19 +165,15 @@ var Main = (function (_super) {
      * Create scene interface
      */
     Main.prototype.createGameScene = function () {
-        // let sky = this.createBitmapByName("bg_jpg");
-        // this.addChild(sky);
         var stageW = this.stage.stageWidth;
         var stageH = this.stage.stageHeight;
         // sky.width = stageW;
         // sky.height = stageH;
-        this.addChild(new Ball());
-        // let button = new eui.Button();
-        // button.label = "Click!";
-        // button.horizontalCenter = 0;
-        // button.verticalCenter = 0;
-        // this.addChild(button);
-        // button.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onButtonClick, this);
+        this.next();
+    };
+    Main.prototype.next = function () {
+        this.GameLevelsIndex++;
+        this.addChild(this.GameLevels[this.GameLevelsIndex].getInstance(this));
     };
     /**
      * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
