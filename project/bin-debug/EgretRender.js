@@ -237,7 +237,7 @@ var EgretRender = (function () {
             }
             else {
                 fillStyle = null;
-                strokeStyle = 0x000; //0xff0000;
+                strokeStyle = 0xff0000; //0x000//
                 lineWidth = 1;
             }
             for (var j = 0; j < part.vertices.length; j++) {

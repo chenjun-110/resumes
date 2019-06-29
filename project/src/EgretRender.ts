@@ -265,7 +265,7 @@ class EgretRender {
 				lineWidth = bodyRender.lineWidth;
 			}else {
 				fillStyle = null;
-				strokeStyle = 0x000//0xff0000;
+				strokeStyle = 0xff0000;//0x000//
 				lineWidth = 1;
 			}
 

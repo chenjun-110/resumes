@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="StairsSkin" width="375" height="2900" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Image id="map" width="100%" height="100%" x="0" y="0" source="universe_jpg" fillMode="repeat"/>
+    <e:Rect id="bottoms" width="375" height="20" x="187.5" y="675" anchorOffsetX="187.5" anchorOffsetY="10" fillColor="0xff7098da"/>
+	<e:Rect id="tops" width="375" height="20" x="187.46" y="-9" anchorOffsetX="187.5" anchorOffsetY="10" fillColor="0xFF7098DA"/>
+	<e:Rect id="lefts" width="20" height="667" x="-8" y="333.5" anchorOffsetX="10" anchorOffsetY="333.5" fillColor="0xff7098da"/>
+	<e:Rect id="rights" width="20" height="667" x="384" y="333.5" anchorOffsetX="10" anchorOffsetY="333.5" fillColor="0xff7098da"/>
+	<e:Button id="g1" label="刚体" x="88.5" y="400" anchorOffsetX="83.5" width="167" anchorOffsetY="50" visible="false"/>
+	<e:Button id="next" label="下一关" x="117.5" y="421.5" anchorOffsetX="40" width="80" anchorOffsetY="40" height="80" name="next" visible="false"/>
+	<e:Button id="reset" label="重玩" x="251.5" y="421.5" anchorOffsetX="40" width="80" anchorOffsetY="40" height="80" name="reset" visible="false"/>
+</e:Skin>

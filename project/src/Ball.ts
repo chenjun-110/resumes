@@ -32,13 +32,14 @@ class Ball extends eui.Component {
     win:egret.tween.TweenGroup;
     engine
     robot:egret.MovieClip
+    booms:egret.MovieClip
     next:eui.Button;
     reset:eui.Button;
     childrenCreated(){
         console.log('childrenCreated',this.bottoms.x)
         playAnimations(this.cannnonRotate, true)
     }
-    init () {
+    loadRobot () {
         var data = RES.getRes("robot_json");
         var png = RES.getRes("robot_png");
         var mcFactory:egret.MovieClipDataFactory = new egret.MovieClipDataFactory( data, png );
@@ -48,13 +49,21 @@ class Ball extends eui.Component {
         robot.width = robot.height = 100
         robot.anchorOffsetX = robot.anchorOffsetY = 160
         this.addChild( robot );
-        robot.gotoAndStop(25)
-        // setTimeout(()=>{
-        //     // robot.movieClipData  = mcFactory.generateMovieClipData( "walk" );
-        //     // robot.gotoAndPlay( 1 ,-1);
-        //     robot.gotoAndStop(25)
-        // },3000)
-
+        // robot.gotoAndStop(25)
+    }
+    loadBooms () {
+        var data = RES.getRes("booms_json");
+        var png = RES.getRes("booms_png");
+        var mcFactory:egret.MovieClipDataFactory = new egret.MovieClipDataFactory( data, png );
+        var booms = this.booms = new egret.MovieClip( mcFactory.generateMovieClipData( "boom" ) );
+        booms.anchorOffsetX = booms.anchorOffsetY = 140
+        booms.scaleX = booms.scaleY = 0.5
+        booms.visible = false
+        this.addChild( booms );
+    }
+    init () {
+        this.loadRobot()
+        this.loadBooms()
         console.log('init',this.bottoms.x,this.bottoms)
         var Engine = Matter.Engine,
         Render = Matter.Render,
@@ -95,7 +104,6 @@ class Ball extends eui.Component {
         var group = Matter.Body.nextGroup(false);
         const leftWall =  Matter.Bodies.rectangle(this.lefts.x, this.lefts.y, this.lefts.width, this.lefts.height, { isStatic: true, friction: .2, container:this, egretSprite:this.lefts  })
         const rightWall = Matter.Bodies.rectangle(this.rights.x, this.rights.y, this.rights.width, this.rights.height, { isStatic: true, friction: .2, container:this, egretSprite:this.rights})
-
         Matter.World.add(engine.world, [
             Matter.Bodies.rectangle(this.tops.x, this.tops.y, this.tops.width, this.tops.height, { isStatic: true, friction: .2, container:this, egretSprite:this.tops}),
             Matter.Bodies.rectangle(this.bottoms.x, this.bottoms.y, this.bottoms.width, this.bottoms.height, { 
@@ -112,10 +120,6 @@ class Ball extends eui.Component {
             leftWall, rightWall
         ]);
         console.log('world', world,rightWall)
-        
-        // setTimeout(()=>{
-        //     Matter.Body.setStatic(leftWall, false)
-        // },3000) 
         // Render.lookAt(render, {
         //     min: { x: 0, y: 0 },
         //     max: { x: 375, y: 667 }
@@ -233,6 +237,10 @@ class Ball extends eui.Component {
         console.log('e',e.target.name)
         RES.getRes('balloon_mp3').play(0, 1)
         this.destroyPaoPao(e.target)
+        this.booms.x = e.target.x
+        this.booms.y = e.target.y
+        this.booms.visible = true
+        this.booms.gotoAndPlay(1)
     }
     destroyPaoPao (target) {
         target.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.boomPaoPao,this)
@@ -247,6 +255,11 @@ class Ball extends eui.Component {
         } else {
             this.robot.gotoAndPlay( this.robot.currentFrame ,-1);
         }
+        // if (e.stageX > this.robot.x) {
+        //     this.robot.scaleX = Math.abs(this.robot.scaleX)
+        // } else {
+        //     this.robot.scaleX = Math.abs(this.robot.scaleX)*-1
+        // }
         egret.Tween.get(this.robot, {
             loop: false,//设置循环播放
             onChangeObj: this//更新函数作用域

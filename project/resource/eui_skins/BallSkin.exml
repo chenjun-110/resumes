@@ -40,7 +40,7 @@
 	<e:Button id="bronBtn" label="点我" x="187.5" y="54.29" anchorOffsetX="40" width="80" anchorOffsetY="40" height="80"/>
 	<e:Button id="next" label="下一关" x="122" y="490.5" anchorOffsetX="46.5" width="93" anchorOffsetY="40" height="80" visible="false"/>
 	<e:Button id="reset" label="重玩此关" x="262.5" y="490.5" anchorOffsetX="52" width="98" anchorOffsetY="40" height="80" visible="false"/>
-	<e:Rect id="bottoms" width="375" height="20" x="187.5" y="675" anchorOffsetX="187.5" anchorOffsetY="10" fillColor="0xff7098da" locked="true"/>
+	<e:Rect id="bottoms" width="375" height="20" x="187.5" y="675" anchorOffsetX="187.5" anchorOffsetY="10" fillColor="0xff7098da"/>
 	<e:Rect id="tops" width="375" height="20" x="187.46" y="-9" anchorOffsetX="187.5" anchorOffsetY="10" fillColor="0xFF7098DA"/>
 	<e:Rect id="lefts" width="20" height="667" x="-8" y="333.5" anchorOffsetX="10" anchorOffsetY="333.5" fillColor="0xff7098da"/>
 	<e:Rect id="rights" width="20" height="667" x="384" y="333.5" anchorOffsetX="10" anchorOffsetY="333.5" fillColor="0xff7098da"/>

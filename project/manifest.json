@@ -18,6 +18,7 @@
 		"bin-debug/paopao.js",
 		"bin-debug/Pen.js",
 		"bin-debug/Platform.js",
+		"bin-debug/Stairs.js",
 		"bin-debug/ThemeAdapter.js"
 	]
 }

@@ -75,7 +75,7 @@ var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.GameLevels = [Ball, Pen];
+        _this.GameLevels = [Stairs, Ball, Pen];
         _this.GameLevelsIndex = -1;
         return _this;
     }

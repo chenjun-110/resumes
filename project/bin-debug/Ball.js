@@ -40,7 +40,7 @@ var Ball = (function (_super) {
         console.log('childrenCreated', this.bottoms.x);
         playAnimations(this.cannnonRotate, true);
     };
-    Ball.prototype.init = function () {
+    Ball.prototype.loadRobot = function () {
         var data = RES.getRes("robot_json");
         var png = RES.getRes("robot_png");
         var mcFactory = new egret.MovieClipDataFactory(data, png);
@@ -50,12 +50,21 @@ var Ball = (function (_super) {
         robot.width = robot.height = 100;
         robot.anchorOffsetX = robot.anchorOffsetY = 160;
         this.addChild(robot);
-        robot.gotoAndStop(25);
-        // setTimeout(()=>{
-        //     // robot.movieClipData  = mcFactory.generateMovieClipData( "walk" );
-        //     // robot.gotoAndPlay( 1 ,-1);
-        //     robot.gotoAndStop(25)
-        // },3000)
+        // robot.gotoAndStop(25)
+    };
+    Ball.prototype.loadBooms = function () {
+        var data = RES.getRes("booms_json");
+        var png = RES.getRes("booms_png");
+        var mcFactory = new egret.MovieClipDataFactory(data, png);
+        var booms = this.booms = new egret.MovieClip(mcFactory.generateMovieClipData("boom"));
+        booms.anchorOffsetX = booms.anchorOffsetY = 140;
+        booms.scaleX = booms.scaleY = 0.5;
+        booms.visible = false;
+        this.addChild(booms);
+    };
+    Ball.prototype.init = function () {
+        this.loadRobot();
+        this.loadBooms();
         console.log('init', this.bottoms.x, this.bottoms);
         var Engine = Matter.Engine, Render = Matter.Render, Runner = Matter.Runner, MouseConstraint = Matter.MouseConstraint, Mouse = Matter.Mouse, World = Matter.World, Bodies = Matter.Bodies;
         //创建engine
@@ -104,9 +113,6 @@ var Ball = (function (_super) {
             leftWall, rightWall
         ]);
         console.log('world', world, rightWall);
-        // setTimeout(()=>{
-        //     Matter.Body.setStatic(leftWall, false)
-        // },3000) 
         // Render.lookAt(render, {
         //     min: { x: 0, y: 0 },
         //     max: { x: 375, y: 667 }
@@ -219,6 +225,10 @@ var Ball = (function (_super) {
         console.log('e', e.target.name);
         RES.getRes('balloon_mp3').play(0, 1);
         this.destroyPaoPao(e.target);
+        this.booms.x = e.target.x;
+        this.booms.y = e.target.y;
+        this.booms.visible = true;
+        this.booms.gotoAndPlay(1);
     };
     Ball.prototype.destroyPaoPao = function (target) {
         target.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.boomPaoPao, this);
@@ -235,6 +245,11 @@ var Ball = (function (_super) {
         else {
             this.robot.gotoAndPlay(this.robot.currentFrame, -1);
         }
+        // if (e.stageX > this.robot.x) {
+        //     this.robot.scaleX = Math.abs(this.robot.scaleX)
+        // } else {
+        //     this.robot.scaleX = Math.abs(this.robot.scaleX)*-1
+        // }
         egret.Tween.get(this.robot, {
             loop: false,
             onChangeObj: this //更新函数作用域

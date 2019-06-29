@@ -1,7 +1,7 @@
 {
 	"groups": [
 		{
-			"keys": "checkbox_select_disabled_png,checkbox_select_down_png,checkbox_select_up_png,checkbox_unselect_png,selected_png,border_png,header_png,radiobutton_select_disabled_png,radiobutton_select_down_png,radiobutton_select_up_png,radiobutton_unselect_png,roundthumb_png,thumb_png,track_png,tracklight_png,handle_png,off_png,on_png,button_down_png,button_up_png,thumb_pb_png,track_pb_png,track_sb_png,bg_jpg,egret_icon_png,description_json,ball_1_png,ball_2_png,ball_3_png,ball_4_png,ball_5_png,ball_6_png,circle_png,tiger_png,boom_mp3,balloon_mp3,wind_mp3,robot_png,robot_json",
+			"keys": "checkbox_select_disabled_png,checkbox_select_down_png,checkbox_select_up_png,checkbox_unselect_png,selected_png,border_png,header_png,radiobutton_select_disabled_png,radiobutton_select_down_png,radiobutton_select_up_png,radiobutton_unselect_png,roundthumb_png,thumb_png,track_png,tracklight_png,handle_png,off_png,on_png,button_down_png,button_up_png,thumb_pb_png,track_pb_png,track_sb_png,bg_jpg,egret_icon_png,description_json,ball_1_png,ball_2_png,ball_3_png,ball_4_png,ball_5_png,ball_6_png,circle_png,tiger_png,boom_mp3,balloon_mp3,wind_mp3,robot_png,robot_json,booms_json,booms_png,universe_jpg",
 			"name": "preload"
 		}
 	],
@@ -200,6 +200,21 @@
 			"name": "robot_json",
 			"type": "json",
 			"url": "assets/robot.json"
+		},
+		{
+			"name": "booms_json",
+			"type": "json",
+			"url": "assets/booms.json"
+		},
+		{
+			"name": "booms_png",
+			"type": "image",
+			"url": "assets/booms.png"
+		},
+		{
+			"name": "universe_jpg",
+			"type": "image",
+			"url": "assets/universe.jpg"
 		}
 	]
 }

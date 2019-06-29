@@ -104,7 +104,7 @@ class Main extends eui.UILayer {
         // sky.height = stageH;
         this.next()
     }
-    GameLevels = [Ball, Pen]
+    GameLevels = [Stairs, Ball, Pen]
     GameLevelsIndex = -1
     next () {
         this.GameLevelsIndex++
